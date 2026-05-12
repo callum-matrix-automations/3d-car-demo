@@ -62,7 +62,7 @@ function GalleryEnvironment() {
     painting2.colorSpace = THREE.SRGBColorSpace
 
     let paintingIndex = 0
-    const wallMeshes = []
+    const fadeableMeshes = []
 
     clone.traverse((child) => {
       if (child.name === 'Bench') {
@@ -75,9 +75,7 @@ function GalleryEnvironment() {
         child.material = child.material.clone()
         child.material.map = tex
         child.material.color.set('#ffffff')
-        child.material.transparent = true
         child.material.needsUpdate = true
-        wallMeshes.push(child)
         paintingIndex++
       }
 
@@ -86,74 +84,55 @@ function GalleryEnvironment() {
         child.material.emissive = new THREE.Color('#c49a6c')
         child.material.emissiveIntensity = 1.5
         child.material.color.set('#2a2018')
-        child.material.transparent = true
         child.material.needsUpdate = true
-        wallMeshes.push(child)
       }
 
-      // Darken walls to create contrast behind the bags
       if (child.isMesh && child.material?.name === 'Walls') {
         child.material = child.material.clone()
         child.material.color.set('#8a8580')
         child.material.transparent = true
         child.material.needsUpdate = true
-        wallMeshes.push(child)
+        fadeableMeshes.push(child)
       }
 
-      // Darken floor to reduce bounce light
       if (child.isMesh && child.material?.name === 'Floor') {
         child.material = child.material.clone()
         child.material.color.set('#605550')
         child.material.roughness = 0.95
-        child.material.transparent = true
         child.material.needsUpdate = true
-        wallMeshes.push(child)
       }
 
-      // Darken ceiling
       if (child.isMesh && child.material?.name === 'Ceilling') {
         child.material = child.material.clone()
         child.material.color.set('#4a4540')
-        child.material.transparent = true
         child.material.needsUpdate = true
-        wallMeshes.push(child)
       }
 
       if (child.isMesh && child.material
-        && child.material.name !== 'Painting'
-        && child.material.name !== 'Emissive'
-        && child.material.name !== 'Walls'
-        && child.material.name !== 'Floor'
-        && child.material.name !== 'Ceilling') {
-        const mats = Array.isArray(child.material)
-          ? child.material.map((m) => { const c = m.clone(); c.transparent = true; return c })
-          : (() => { const c = child.material.clone(); c.transparent = true; return c })()
-        child.material = mats
-        wallMeshes.push(child)
+        && !['Painting', 'Emissive', 'Walls', 'Floor', 'Ceilling'].includes(child.material.name)) {
+        child.material = Array.isArray(child.material)
+          ? child.material.map((m) => m.clone())
+          : child.material.clone()
       }
     })
 
-    wallMeshesRef.current = wallMeshes
+    wallMeshesRef.current = fadeableMeshes
     return clone
   }, [scene, painting1, painting2])
 
   useFrame(() => {
-    const galleryScale = 2
+    const camDist = camera.position.distanceTo(new THREE.Vector3(0, 0, 0))
+    const fadeStart = 12
+    const fadeEnd = 18
+
     wallMeshesRef.current.forEach((mesh) => {
-      const worldPos = new THREE.Vector3()
-      mesh.getWorldPosition(worldPos)
-
-      const dist = camera.position.distanceTo(worldPos)
-      const fadeStart = 3 * galleryScale
-      const fadeEnd = 1.5 * galleryScale
-
       let opacity
-      if (dist > fadeStart) {
+      if (camDist < fadeStart) {
         opacity = 1
-      } else if (dist < fadeEnd) {
+      } else if (camDist > fadeEnd) {
         opacity = 0
       } else {
-        opacity = (dist - fadeEnd) / (fadeStart - fadeEnd)
+        opacity = 1 - (camDist - fadeStart) / (fadeEnd - fadeStart)
       }
 
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
@@ -382,9 +361,18 @@ function DisplayHandbag({ path, targetSize, basePosition, isSelected }) {
   )
 }
 
+function ClearBackground() {
+  const { scene } = useThree()
+  useMemo(() => {
+    scene.background = new THREE.Color('#0a0a10')
+  }, [scene])
+  return null
+}
+
 export default function FashionScene({ activeHandbag }) {
   return (
     <>
+      <ClearBackground />
       <GalleryLights />
       <Environment preset="apartment" background={false} environmentIntensity={0.08} />
 
