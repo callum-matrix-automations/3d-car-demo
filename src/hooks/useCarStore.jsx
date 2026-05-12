@@ -3,19 +3,36 @@ import { createContext, useContext, useReducer } from 'react'
 const CarContext = createContext(null)
 
 const initialState = {
-  activeColor: '#f0f0f0',
-  activeTab: 'Buy',
-  activeView: null,
+  activeScene: 'auto-studio',
+  activeModel: 'ferrari',
+  activeHandbag: null,
+  fashionPhase: 'intro',
+  detailView: null,
+  carSpec: null,
+  carTransition: null,
+  showBooking: false,
 }
 
 function carReducer(state, action) {
   switch (action.type) {
-    case 'SET_COLOR':
-      return { ...state, activeColor: action.payload }
-    case 'SET_TAB':
-      return { ...state, activeTab: action.payload }
-    case 'SET_VIEW':
-      return { ...state, activeView: state.activeView === action.payload ? null : action.payload }
+    case 'SET_SCENE':
+      return { ...state, activeScene: action.payload, activeHandbag: null, fashionPhase: 'intro', carSpec: null, carTransition: null, showBooking: false }
+    case 'SET_MODEL':
+      return { ...state, activeModel: action.payload, carSpec: null, carTransition: null }
+    case 'SET_HANDBAG':
+      return { ...state, activeHandbag: action.payload, fashionPhase: action.payload ? 'product' : 'select', detailView: null }
+    case 'SET_FASHION_PHASE':
+      return { ...state, fashionPhase: action.payload }
+    case 'SET_DETAIL_VIEW':
+      return { ...state, detailView: action.payload }
+    case 'SET_CAR_SPEC':
+      return { ...state, carSpec: action.payload }
+    case 'START_CAR_TRANSITION':
+      return { ...state, carTransition: action.payload, carSpec: null }
+    case 'FINISH_CAR_TRANSITION':
+      return { ...state, activeModel: state.carTransition, carTransition: null }
+    case 'TOGGLE_BOOKING':
+      return { ...state, showBooking: !state.showBooking, carSpec: null }
     default:
       return state
   }

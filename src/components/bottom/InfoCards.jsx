@@ -1,6 +1,6 @@
 export default function InfoCards() {
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-20 flex gap-0 h-28">
+    <div className="hidden md:flex absolute bottom-0 left-0 right-0 z-20 gap-0 h-28">
       <div className="flex-1 bg-white/5 backdrop-blur-md border-t border-r border-white/10 p-5 flex flex-col justify-center">
         <span className="text-[10px] tracking-widest text-gray-500 uppercase mb-1">My Location</span>
         <span className="text-white text-sm font-medium">Vermont Square, Los Angeles</span>

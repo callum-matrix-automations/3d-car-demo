@@ -19,7 +19,7 @@ const icons = [
 
 export default function Sidebar() {
   return (
-    <div className="absolute left-6 top-[calc(50%+100px)] z-10 flex flex-col gap-3">
+    <div className="hidden md:flex absolute left-6 top-[calc(50%+100px)] z-10 flex-col gap-3">
       {icons.map(({ label, path }) => (
         <button
           key={label}
