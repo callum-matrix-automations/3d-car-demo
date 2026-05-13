@@ -1,4 +1,4 @@
-import { Suspense, useRef, useMemo, useState } from 'react'
+import { Suspense, useRef, useMemo, useState, useCallback } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment, useProgress, Html, useGLTF, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
@@ -19,9 +19,15 @@ function Loader() {
   )
 }
 
-function PuxxModel() {
+function PuxxModel({ onLoaded }) {
   const gltf = useGLTF('/models/puxx.glb')
   const groupRef = useRef()
+  const calledRef = useRef(false)
+
+  if (!calledRef.current && gltf.scene) {
+    calledRef.current = true
+    setTimeout(() => onLoaded?.(), 100)
+  }
 
   const { scale, offset } = useMemo(() => {
     const box = new THREE.Box3().setFromObject(gltf.scene)
@@ -43,7 +49,16 @@ function PuxxModel() {
   )
 }
 
-function PuxxCanvas() {
+function LoadingOverlay({ visible }) {
+  return (
+    <div className={`absolute inset-0 bg-white flex flex-col items-center justify-center z-20 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className="w-10 h-10 border-2 border-gray-200 border-t-black rounded-full animate-spin mb-4" />
+      <p className="text-gray-400 text-xs tracking-wider uppercase">Loading 3D Model</p>
+    </div>
+  )
+}
+
+function PuxxCanvas({ onLoaded }) {
   return (
     <Canvas
       camera={{ position: [0, 2, 5], fov: 35 }}
@@ -60,7 +75,7 @@ function PuxxCanvas() {
       <Environment preset="studio" background={false} environmentIntensity={0.35} />
 
       <Suspense fallback={<Loader />}>
-        <PuxxModel />
+        <PuxxModel onLoaded={onLoaded} />
       </Suspense>
 
       <ContactShadows position={[0, -1.2, 0]} opacity={0.2} blur={2} far={3} />
@@ -80,6 +95,8 @@ function PuxxCanvas() {
 export default function PuxxViewer() {
   const [selectedStrength, setSelectedStrength] = useState(null)
   const [quantity, setQuantity] = useState(5)
+  const [modelLoaded, setModelLoaded] = useState(false)
+  const handleLoaded = useCallback(() => setModelLoaded(true), [])
 
   return (
     <div className="min-h-dvh bg-[#e8e6e3]">
@@ -132,7 +149,8 @@ export default function PuxxViewer() {
           {/* Left — 3D model */}
           <div>
             <div className="relative aspect-square bg-white rounded-sm overflow-hidden">
-              <PuxxCanvas />
+              <LoadingOverlay visible={!modelLoaded} />
+              <PuxxCanvas onLoaded={handleLoaded} />
               <button className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center text-gray-400 hover:text-black transition-colors z-10">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
