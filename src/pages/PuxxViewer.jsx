@@ -88,11 +88,11 @@ export default function PuxxViewer() {
             outputColorSpace: THREE.SRGBColorSpace,
           }}
         >
-          <ambientLight intensity={0.5} color="#e8e8f0" />
-          <hemisphereLight color="#ffffff" groundColor="#1a1a2e" intensity={0.6} />
-          <spotLight position={[8, 10, 8]} angle={0.3} penumbra={1} intensity={2} color="#fff8f0" castShadow />
-          <spotLight position={[-6, 8, -4]} angle={0.4} penumbra={1} intensity={1.2} color="#f0f4ff" />
-          <Environment preset="studio" background={false} environmentIntensity={0.5} />
+          <ambientLight intensity={0.2} color="#e8e8f0" />
+          <hemisphereLight color="#ffffff" groundColor="#1a1a2e" intensity={0.3} />
+          <spotLight position={[8, 10, 8]} angle={0.3} penumbra={1} intensity={1} color="#fff8f0" castShadow />
+          <spotLight position={[-6, 8, -4]} angle={0.4} penumbra={1} intensity={0.6} color="#f0f4ff" />
+          <Environment preset="studio" background={false} environmentIntensity={0.25} />
 
           <Suspense fallback={<Loader />}>
             <PuxxModel />
